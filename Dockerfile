@@ -1,15 +1,16 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-
-# Set working directory where pom.xml is located
-WORKDIR /main/bot
-# Copy all files
+#
+# Build stage
+#
+FROM maven:3.8.3-openjdk-17 AS build
 COPY . .
+RUN mvn clean install
 
-# If your pom.xml is in a subdirectory, like /MoviedetailsBot
-# WORKDIR /main/bot
 
-# Build the project
-RUN mvn clean package -DskipTests
-
-# Run the JAR (update the jar name)
-CMD ["java", "-jar", "target/MovieBot-1.0.jar"]
+#
+# Package stage
+#
+FROM eclipse-temurin:17-jdk
+COPY --from=build /target/MovieBot-1.0.jar demo.jar
+# ENV PORT=8080
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","demo.jar"]
